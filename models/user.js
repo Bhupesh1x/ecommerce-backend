@@ -21,7 +21,6 @@ const userSchame = mongoose.Schema(
     gender: {
       type: String,
       enum: ["Male", "Female"],
-      required: true,
     },
     role: {
       type: String,
@@ -30,7 +29,6 @@ const userSchame = mongoose.Schema(
     },
     dob: {
       type: Date,
-      required: true,
     },
   },
   { timestamps: true }
