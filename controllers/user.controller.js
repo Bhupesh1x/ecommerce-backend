@@ -95,4 +95,25 @@ const getUser = async (req, res) => {
   }
 };
 
-export { register, login, allUsers, getUser };
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return errorMessage(res, "Invalid Id", 401);
+    }
+
+    await user.deleteOne();
+
+    return res.json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.log("deleteUser-error", error);
+    return errorMessage(res);
+  }
+};
+
+export { register, login, allUsers, getUser, deleteUser };
