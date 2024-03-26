@@ -68,4 +68,31 @@ const login = async (req, res) => {
   }
 };
 
-export { register, login };
+const allUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+
+    return res.json(users);
+  } catch (error) {
+    console.log("allUsers-error", error);
+    return errorMessage(res);
+  }
+};
+
+const getUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password");
+
+    if (!user) {
+      return errorMessage(res, "Invalid Id", 401);
+    }
+
+    return res.json(user);
+  } catch (error) {
+    console.log("getUser-error", error);
+    return errorMessage(res);
+  }
+};
+
+export { register, login, allUsers, getUser };
