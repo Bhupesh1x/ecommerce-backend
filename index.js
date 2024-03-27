@@ -4,9 +4,11 @@ import cookieParser from "cookie-parser";
 
 import "dotenv/config";
 
+import { connectDB } from "./utils/features.js";
+
 // api routes
 import userRoutes from "./routes/user.routes.js";
-import { connectDB } from "./utils/features.js";
+import productRoutes from "./routes/product.routes.js";
 
 connectDB();
 
@@ -21,6 +23,7 @@ app.use(cookieParser());
 
 // api routes
 app.use("/api/user", userRoutes);
+app.use("/api/product", productRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
