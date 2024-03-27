@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import cookieParser from "cookie-parser";
 
 import "dotenv/config";
 
@@ -16,6 +17,7 @@ const app = express();
 // middlewares
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 // api routes
 app.use("/api/user", userRoutes);
