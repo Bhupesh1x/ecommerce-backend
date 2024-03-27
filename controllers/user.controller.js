@@ -116,4 +116,11 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { register, login, allUsers, getUser, deleteUser };
+const logout = (req, res) => {
+  return res.cookie("ecommerce-token", null, { expiresIn: new Date() }).json({
+    message: "User logged out successfully",
+    success: true,
+  });
+};
+
+export { register, login, allUsers, getUser, deleteUser, logout };
