@@ -58,7 +58,7 @@ const login = async (req, res) => {
     isUserExist.password = undefined;
 
     return res
-      .cookie("ecommerce-toke", token, {
+      .cookie("ecommerce-token", token, {
         expiresIn: "1d",
       })
       .json(isUserExist);
