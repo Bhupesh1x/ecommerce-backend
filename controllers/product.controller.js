@@ -73,7 +73,29 @@ const updateProduct = async (req, res) => {
 
     return res.json(product);
   } catch (error) {
-    console.log("getAdminProducts-error", error);
+    console.log("updateProduct-error", error);
+    return errorMessage(res);
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const isProductExist = await Product.findById(id);
+
+    if (!isProductExist) {
+      return errorMessage(res, "Invalid id", 400);
+    }
+
+    await Product.findByIdAndDelete(id);
+
+    return res.json({
+      message: "Product deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    console.log("deleteProduct-error", error);
     return errorMessage(res);
   }
 };
@@ -84,4 +106,5 @@ export {
   getCategories,
   getAdminProducts,
   updateProduct,
+  deleteProduct,
 };
