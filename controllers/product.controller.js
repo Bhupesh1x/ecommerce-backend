@@ -33,4 +33,13 @@ const getLatestProducts = async (req, res) => {
   }
 };
 
-export { createProduct, getLatestProducts };
+const getCategories = async (req, res) => {
+  try {
+    const category = await Product.distinct("category");
+    return res.json(category);
+  } catch (error) {
+    return errorMessage(res);
+  }
+};
+
+export { createProduct, getLatestProducts, getCategories };
