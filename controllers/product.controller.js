@@ -23,4 +23,14 @@ const createProduct = async (req, res) => {
   }
 };
 
-export { createProduct };
+const getLatestProducts = async (req, res) => {
+  try {
+    const products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+    return res.json(products);
+  } catch (error) {
+    console.log("getLatestProducts-error", error);
+    return errorMessage(res);
+  }
+};
+
+export { createProduct, getLatestProducts };
