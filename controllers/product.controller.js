@@ -38,8 +38,50 @@ const getCategories = async (req, res) => {
     const category = await Product.distinct("category");
     return res.json(category);
   } catch (error) {
+    console.log("getCategories-error", error);
     return errorMessage(res);
   }
 };
 
-export { createProduct, getLatestProducts, getCategories };
+const getAdminProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
+    return res.json(products);
+  } catch (error) {
+    console.log("getAdminProducts-error", error);
+    return errorMessage(res);
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const isProductExist = await Product.findById(id);
+
+    if (!isProductExist) {
+      return errorMessage(res, "Invalid id", 400);
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      id,
+      {
+        ...req.body,
+      },
+      { new: true }
+    );
+
+    return res.json(product);
+  } catch (error) {
+    console.log("getAdminProducts-error", error);
+    return errorMessage(res);
+  }
+};
+
+export {
+  createProduct,
+  getLatestProducts,
+  getCategories,
+  getAdminProducts,
+  updateProduct,
+};
