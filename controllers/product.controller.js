@@ -100,6 +100,23 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const getSingleProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return errorMessage(res, "Product not found", 404);
+    }
+
+    return res.json(product);
+  } catch (error) {
+    console.log("getSingleProduct-error", error);
+    return errorMessage(res);
+  }
+};
+
 export {
   createProduct,
   getLatestProducts,
@@ -107,4 +124,5 @@ export {
   getAdminProducts,
   updateProduct,
   deleteProduct,
+  getSingleProduct,
 };
