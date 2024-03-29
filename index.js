@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import NodeCache from "node-cache";
 import cookieParser from "cookie-parser";
 
 import "dotenv/config";
@@ -11,6 +12,8 @@ import userRoutes from "./routes/user.routes.js";
 import productRoutes from "./routes/product.routes.js";
 
 connectDB();
+
+export const cache = new NodeCache();
 
 const port = process.env.PORT;
 
