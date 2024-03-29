@@ -1,3 +1,4 @@
+import { cache } from "../index.js";
 import Product from "../models/product.js";
 import { errorMessage } from "../utils/features.js";
 
@@ -23,9 +24,18 @@ const createProduct = async (req, res) => {
   }
 };
 
+// Revalidate cache on create, update, delete product & new order
 const getLatestProducts = async (req, res) => {
   try {
-    const products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+    let products;
+
+    if (cache.has("latest-products")) {
+      products = JSON.parse(cache.get("latest-products"));
+    } else {
+      products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+      cache.set("latest-products", JSON.stringify(products));
+    }
+
     return res.json(products);
   } catch (error) {
     console.log("getLatestProducts-error", error);
@@ -33,19 +43,37 @@ const getLatestProducts = async (req, res) => {
   }
 };
 
+// Revalidate cache on create, update and delete product
 const getCategories = async (req, res) => {
   try {
-    const category = await Product.distinct("category");
-    return res.json(category);
+    let categories;
+
+    if (cache.has("categories")) {
+      categories = JSON.parse(cache.get("categories"));
+    } else {
+      categories = await Product.distinct("category");
+      cache.set("categories", JSON.stringify(categories));
+    }
+
+    return res.json(categories);
   } catch (error) {
     console.log("getCategories-error", error);
     return errorMessage(res);
   }
 };
 
+// Revalidate cache on create, update and delete product & new order
 const getAdminProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    let products;
+
+    if (cache.has("admin-products")) {
+      products = JSON.parse(cache.get("admin-products"));
+    } else {
+      products = await Product.find();
+      cache.set("admin-products", JSON.stringify(products));
+    }
+
     return res.json(products);
   } catch (error) {
     console.log("getAdminProducts-error", error);
@@ -103,11 +131,16 @@ const deleteProduct = async (req, res) => {
 const getSingleProduct = async (req, res) => {
   try {
     const { id } = req.params;
+    let product;
 
-    const product = await Product.findById(id);
-
-    if (!product) {
-      return errorMessage(res, "Product not found", 404);
+    if (cache.has(`product-${id}`)) {
+      product = JSON.parse(cache.get(`product-${id}`));
+    } else {
+      product = await Product.findById(id);
+      if (!product) {
+        return errorMessage(res, "Product not found", 404);
+      }
+      cache.set(`product-${id}`, JSON.stringify(product));
     }
 
     return res.json(product);
