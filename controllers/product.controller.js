@@ -1,6 +1,6 @@
 import { cache } from "../index.js";
 import Product from "../models/product.js";
-import { errorMessage } from "../utils/features.js";
+import { errorMessage, invalidateCache } from "../utils/features.js";
 
 const createProduct = async (req, res) => {
   try {
@@ -16,6 +16,8 @@ const createProduct = async (req, res) => {
       category: category.toLowerCase(),
       seller: userId,
     });
+
+    await invalidateCache({ product: true });
 
     return res.json(product);
   } catch (error) {
@@ -99,6 +101,8 @@ const updateProduct = async (req, res) => {
       { new: true }
     );
 
+    await invalidateCache({ product: true });
+
     return res.json(product);
   } catch (error) {
     console.log("updateProduct-error", error);
@@ -117,6 +121,8 @@ const deleteProduct = async (req, res) => {
     }
 
     await Product.findByIdAndDelete(id);
+
+    await invalidateCache({ product: true });
 
     return res.json({
       message: "Product deleted successfully",
