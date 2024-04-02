@@ -26,7 +26,6 @@ const createProduct = async (req, res) => {
   }
 };
 
-// Revalidate cache on create, update, delete product & new order
 const getLatestProducts = async (req, res) => {
   try {
     let products;
@@ -45,7 +44,6 @@ const getLatestProducts = async (req, res) => {
   }
 };
 
-// Revalidate cache on create, update and delete product
 const getCategories = async (req, res) => {
   try {
     let categories;
@@ -64,7 +62,6 @@ const getCategories = async (req, res) => {
   }
 };
 
-// Revalidate cache on create, update and delete product & new order
 const getAdminProducts = async (req, res) => {
   try {
     let products;
