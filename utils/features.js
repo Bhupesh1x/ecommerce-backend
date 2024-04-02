@@ -21,7 +21,7 @@ export const errorMessage = (res, error, statusCode) => {
   });
 };
 
-export const invalidateCache = async ({ product }) => {
+export const invalidateCache = async ({ product, order }) => {
   if (product) {
     const keys = ["latest-products", "categories", "admin-products"];
 
@@ -32,5 +32,17 @@ export const invalidateCache = async ({ product }) => {
     });
 
     cache.del(keys);
+  }
+};
+
+export const reduceProductStock = async (orderItems) => {
+  for (let i = 0; i < orderItems.length; i++) {
+    const order = orderItems[i];
+
+    const product = await Product.findById(order.productId);
+
+    product.stock -= order.quantity;
+
+    await product.save();
   }
 };
