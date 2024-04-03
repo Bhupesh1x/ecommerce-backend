@@ -82,4 +82,30 @@ const allOrders = async (req, res) => {
   }
 };
 
-export { createOrder, myOrders, allOrders };
+const orderDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const key = `order-${id}`;
+
+    let order;
+
+    if (cache.has(key)) {
+      order = JSON.parse(cache.get(key));
+    } else {
+      order = await Order.findById(id).populate("user", "_id name");
+
+      if (!order) {
+        return errorMessage(res, "Order not found", 404);
+      }
+
+      cache.set(key, JSON.stringify(order));
+    }
+
+    return res.json(order);
+  } catch (error) {
+    return errorMessage(res);
+  }
+};
+
+export { createOrder, myOrders, allOrders, orderDetails };
