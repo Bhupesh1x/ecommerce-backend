@@ -143,4 +143,34 @@ const processOrder = async (req, res) => {
   }
 };
 
-export { createOrder, myOrders, allOrders, orderDetails, processOrder };
+const deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return errorMessage(res, "Order not found", 404);
+    }
+
+    await order.deleteOne();
+
+    await invalidateCache({ product: false, order: true });
+
+    return res.json({
+      success: true,
+      message: "Order deleted successfully",
+    });
+  } catch (error) {
+    return errorMessage(res);
+  }
+};
+
+export {
+  createOrder,
+  myOrders,
+  allOrders,
+  orderDetails,
+  processOrder,
+  deleteOrder,
+};
