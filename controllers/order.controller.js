@@ -108,4 +108,39 @@ const orderDetails = async (req, res) => {
   }
 };
 
-export { createOrder, myOrders, allOrders, orderDetails };
+const processOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return errorMessage(res, "Order not found", 404);
+    }
+
+    switch (order.status) {
+      case "Processing":
+        order.status = "Shipped";
+        break;
+      case "Shipped":
+        order.status = "Delivered";
+        break;
+      default:
+        order.status = "Delivered";
+        break;
+    }
+
+    await order.save();
+
+    await invalidateCache({ product: false, order: true });
+
+    return res.json({
+      success: true,
+      message: "Order processed successfully",
+    });
+  } catch (error) {
+    return errorMessage(res);
+  }
+};
+
+export { createOrder, myOrders, allOrders, orderDetails, processOrder };
