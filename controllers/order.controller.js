@@ -35,6 +35,7 @@ const createOrder = async (req, res) => {
       product: true,
       order: true,
       userId: order.user,
+      productId: orderItems?.map((item) => item.productId),
     });
 
     return res.status(201).json({

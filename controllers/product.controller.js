@@ -98,7 +98,7 @@ const updateProduct = async (req, res) => {
       { new: true }
     );
 
-    await invalidateCache({ product: true });
+    await invalidateCache({ product: true, productId: id });
 
     return res.json(product);
   } catch (error) {
@@ -119,7 +119,7 @@ const deleteProduct = async (req, res) => {
 
     await Product.findByIdAndDelete(id);
 
-    await invalidateCache({ product: true });
+    await invalidateCache({ product: true, productId: id });
 
     return res.json({
       message: "Product deleted successfully",

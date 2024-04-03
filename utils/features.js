@@ -21,15 +21,23 @@ export const errorMessage = (res, error, statusCode) => {
   });
 };
 
-export const invalidateCache = async ({ product, order, userId, orderId }) => {
+export const invalidateCache = async ({
+  product,
+  order,
+  userId,
+  orderId,
+  productId,
+}) => {
   if (product) {
     const keys = ["latest-products", "categories", "admin-products"];
 
-    const products = await Product.find({}).select("_id");
+    if (typeof productId === "string") keys.push(`product-${productId}`);
 
-    products.forEach((element) => {
-      keys.push(`product-${element._id}`);
-    });
+    if (typeof productId === "object") {
+      productId.forEach((element) => {
+        keys.push(`product-${element}`);
+      });
+    }
 
     cache.del(keys);
   }
