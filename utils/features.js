@@ -21,7 +21,7 @@ export const errorMessage = (res, error, statusCode) => {
   });
 };
 
-export const invalidateCache = async ({ product, order }) => {
+export const invalidateCache = async ({ product, order, userId, orderId }) => {
   if (product) {
     const keys = ["latest-products", "categories", "admin-products"];
 
@@ -30,6 +30,12 @@ export const invalidateCache = async ({ product, order }) => {
     products.forEach((element) => {
       keys.push(`product-${element._id}`);
     });
+
+    cache.del(keys);
+  }
+
+  if (order) {
+    const keys = ["all-orders", `my-orders-${userId}`, `order-${orderId}`];
 
     cache.del(keys);
   }

@@ -18,7 +18,7 @@ const createOrder = async (req, res) => {
       total,
     } = req.body;
 
-    await Order.create({
+    const order = await Order.create({
       shippingInfo,
       orderItems,
       user: req.user.userId,
@@ -31,7 +31,11 @@ const createOrder = async (req, res) => {
 
     await reduceProductStock(orderItems);
 
-    await invalidateCache({ product: true, order: true });
+    await invalidateCache({
+      product: true,
+      order: true,
+      userId: order.user,
+    });
 
     return res.status(201).json({
       message: "Order created successfully",
@@ -132,7 +136,12 @@ const processOrder = async (req, res) => {
 
     await order.save();
 
-    await invalidateCache({ product: false, order: true });
+    await invalidateCache({
+      product: false,
+      order: true,
+      orderId: order._id,
+      userId: order.user,
+    });
 
     return res.json({
       success: true,
@@ -155,7 +164,12 @@ const deleteOrder = async (req, res) => {
 
     await order.deleteOne();
 
-    await invalidateCache({ product: false, order: true });
+    await invalidateCache({
+      product: false,
+      order: true,
+      orderId: order._id,
+      userId: order.user,
+    });
 
     return res.json({
       success: true,
