@@ -11,6 +11,7 @@ import { connectDB } from "./utils/features.js";
 import userRoutes from "./routes/user.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import productRoutes from "./routes/product.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 
 connectDB();
 
@@ -29,6 +30,7 @@ app.use(cookieParser());
 app.use("/api/user", userRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
