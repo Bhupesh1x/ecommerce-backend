@@ -5,7 +5,7 @@ const createCoupon = async (req, res) => {
   try {
     const { coupon, amount } = req.body;
 
-    if (!coupon.trim() || !amount) {
+    if (!coupon?.trim() || !amount) {
       return errorMessage(res, "please enter all thee required fields");
     }
 
@@ -20,4 +20,28 @@ const createCoupon = async (req, res) => {
   }
 };
 
-export { createCoupon };
+const applyDiscount = async (req, res) => {
+  try {
+    const { coupon } = req.query;
+
+    if (!coupon?.trim()) {
+      return errorMessage(res, "Missing required fields", 400);
+    }
+
+    const discount = await Coupon.findOne({ coupon });
+
+    if (!discount) {
+      return errorMessage(res, "Invalid coupon code", 400);
+    }
+
+    return res.json({
+      success: true,
+      discount: discount.amount,
+    });
+  } catch (error) {
+    console.log("applyDiscount-error", error);
+    return errorMessage(res);
+  }
+};
+
+export { createCoupon, applyDiscount };
