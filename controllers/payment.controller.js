@@ -44,4 +44,36 @@ const applyDiscount = async (req, res) => {
   }
 };
 
-export { createCoupon, applyDiscount };
+const allCoupons = async (req, res) => {
+  try {
+    const coupons = await Coupon.find();
+
+    return res.json(coupons);
+  } catch (error) {
+    console.log("allCoupon-error", error);
+    return errorMessage(res);
+  }
+};
+
+const deleteCoupon = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const coupon = await Coupon.findById(id);
+
+    if (!coupon) {
+      return errorMessage(res, "Coupon not found", 400);
+    }
+
+    await coupon.deleteOne();
+
+    return res.json({
+      success: true,
+      message: "Coupon deleted successfully",
+    });
+  } catch (error) {
+    console.log("deleteCoupon-error", error);
+    return errorMessage(res);
+  }
+};
+
+export { createCoupon, applyDiscount, allCoupons, deleteCoupon };
