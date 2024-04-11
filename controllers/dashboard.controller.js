@@ -3,7 +3,11 @@ import Order from "../models/order.js";
 import Product from "../models/product.js";
 
 import { cache } from "../index.js";
-import { calculatePercent, errorMessage } from "../utils/features.js";
+import {
+  calculatePercent,
+  errorMessage,
+  getInventories,
+} from "../utils/features.js";
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -168,17 +172,9 @@ const getDashboardStats = async (req, res) => {
         }
       });
 
-      const categoriesCountPromise = categories.map((category) =>
-        Product.countDocuments({ category })
-      );
-
-      const categoriesCount = await Promise.all(categoriesCountPromise);
-
-      const categoryCount = [];
-      categories.forEach((category, i) => {
-        categoryCount.push({
-          [category]: Math.round((categoriesCount[i] / productCount) * 100),
-        });
+      const categoryCount = await getInventories({
+        categories,
+        productCount,
       });
 
       const usersGenderRatio = {
@@ -208,4 +204,59 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-export { getDashboardStats };
+const getPieChartStats = async (req, res) => {
+  try {
+    let key = "admin-pie-charts";
+    let charts;
+
+    if (cache.has(key)) {
+      charts = JSON.parse(cache.get(key));
+    } else {
+      const [
+        processingOrders,
+        shippedOrders,
+        deliveredOrders,
+        categories,
+        productCount,
+        productsOutOfStock,
+      ] = await Promise.all([
+        Order.countDocuments({ status: "Processing" }),
+        Order.countDocuments({ status: "Shipped" }),
+        Order.countDocuments({ status: "Delivered" }),
+        Product.distinct("category"),
+        Product.countDocuments(),
+        Product.countDocuments({ stock: 0 }),
+      ]);
+
+      const productCategories = await getInventories({
+        categories,
+        productCount,
+      });
+
+      const orderFullfilment = {
+        processingOrders,
+        shippedOrders,
+        deliveredOrders,
+      };
+
+      const stocksAvailability = {
+        inStock: productCount - productsOutOfStock,
+        OutOfStock: productsOutOfStock,
+      };
+
+      charts = {
+        orderFullfilment,
+        productCategories,
+        stocksAvailability,
+      };
+      // cache.set(key,JSON.stringify(charts));
+    }
+
+    return res.json(charts);
+  } catch (error) {
+    console.log("getPieChartStats-error", error);
+    return errorMessage(res);
+  }
+};
+
+export { getDashboardStats, getPieChartStats };
