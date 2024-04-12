@@ -6,6 +6,7 @@ import { cache } from "../index.js";
 import {
   calculatePercent,
   errorMessage,
+  getChartData,
   getInventories,
 } from "../utils/features.js";
 
@@ -164,7 +165,8 @@ const getDashboardStats = async (req, res) => {
       const orderMonthlyRevenue = new Array(6).fill(0);
 
       lastSixMonthOrders.forEach((order) => {
-        const monthDifference = order.createdAt?.getMonth() - today.getMonth();
+        const monthDifference =
+          (today.getMonth() - order.createdAt?.getMonth() + 12) % 12;
 
         if (monthDifference < 6) {
           orderMonthlyCount[6 - monthDifference - 1] += 1;
@@ -318,4 +320,68 @@ const getPieChartStats = async (req, res) => {
   }
 };
 
-export { getDashboardStats, getPieChartStats };
+const getBarChartStats = async (req, res) => {
+  try {
+    let key = "admin-bar-charts";
+    let charts;
+
+    if (cache.has(key)) {
+      charts = JSON.parse(cache.get(key));
+    } else {
+      const today = new Date();
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(today.getMonth() - 6);
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(today.getMonth() - 12);
+
+      const sixMonthsProductsPromise = Product.find({
+        createdAt: {
+          $gte: sixMonthsAgo,
+          $lte: today,
+        },
+      }).select("createdAt");
+
+      const sixMonthsUsersPromise = User.find({
+        createdAt: {
+          $gte: sixMonthsAgo,
+          $lte: today,
+        },
+      }).select("createdAt");
+
+      const twelveMonthsOrdersPromise = Order.find({
+        createdAt: {
+          $gte: twelveMonthsAgo,
+          $lte: today,
+        },
+      }).select("createdAt");
+
+      const [products, users, orders] = await Promise.all([
+        sixMonthsProductsPromise,
+        sixMonthsUsersPromise,
+        twelveMonthsOrdersPromise,
+      ]);
+
+      const productsCount = getChartData({
+        length: 6,
+        today,
+        docArr: products,
+      });
+      const usersCount = getChartData({ length: 6, today, docArr: users });
+      const ordersCount = getChartData({ length: 12, today, docArr: orders });
+
+      charts = {
+        products: productsCount,
+        users: usersCount,
+        orders: ordersCount,
+      };
+      cache.set(key, JSON.stringify(charts));
+    }
+
+    return res.json(charts);
+  } catch (error) {
+    console.log("getPieChartStats-error", error);
+    return errorMessage(res);
+  }
+};
+
+export { getDashboardStats, getPieChartStats, getBarChartStats };
