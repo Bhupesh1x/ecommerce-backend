@@ -212,6 +212,13 @@ const getPieChartStats = async (req, res) => {
     if (cache.has(key)) {
       charts = JSON.parse(cache.get(key));
     } else {
+      const allOrdersPromise = Order.find().select([
+        "tax",
+        "discount",
+        "shippingCharges",
+        "total",
+      ]);
+
       const [
         processingOrders,
         shippedOrders,
@@ -219,6 +226,10 @@ const getPieChartStats = async (req, res) => {
         categories,
         productCount,
         productsOutOfStock,
+        allOrders,
+        allUsers,
+        customerUsers,
+        adminUsers,
       ] = await Promise.all([
         Order.countDocuments({ status: "Processing" }),
         Order.countDocuments({ status: "Shipped" }),
@@ -226,6 +237,10 @@ const getPieChartStats = async (req, res) => {
         Product.distinct("category"),
         Product.countDocuments(),
         Product.countDocuments({ stock: 0 }),
+        allOrdersPromise,
+        User.find().select("+dob"),
+        User.countDocuments({ role: "User" }),
+        User.countDocuments({ role: "Admin" }),
       ]);
 
       const productCategories = await getInventories({
@@ -244,12 +259,56 @@ const getPieChartStats = async (req, res) => {
         OutOfStock: productsOutOfStock,
       };
 
+      const grossIncome = allOrders.reduce(
+        (acc, curr) => (acc += curr.total || 0),
+        0
+      );
+
+      const discount = allOrders.reduce(
+        (acc, curr) => (acc += curr.discount || 0),
+        0
+      );
+
+      const productionCost = allOrders.reduce(
+        (acc, curr) => (acc += curr.shippingCharges || 0),
+        0
+      );
+
+      const burnt = allOrders.reduce((acc, curr) => (acc += curr.tax || 0), 0);
+
+      const marketingCost = (grossIncome * 30) / 100;
+
+      const netMargin =
+        grossIncome - discount - productionCost - burnt - marketingCost;
+
+      const revenueDistribution = {
+        netMargin,
+        discount,
+        productionCost,
+        burnt,
+        marketingCost,
+      };
+
+      const usersAgeGroup = {
+        teen: allUsers.filter((i) => i.age < 20)?.length,
+        adult: allUsers.filter((i) => i.age > 20 && i.age < 40)?.length,
+        old: allUsers.filter((i) => i.age >= 40)?.length,
+      };
+
+      const customerDetails = {
+        adminUsers,
+        customerUsers,
+        usersAgeGroup,
+      };
+
       charts = {
         orderFullfilment,
         productCategories,
         stocksAvailability,
+        revenueDistribution,
+        customerDetails,
       };
-      // cache.set(key,JSON.stringify(charts));
+      cache.set(key, JSON.stringify(charts));
     }
 
     return res.json(charts);

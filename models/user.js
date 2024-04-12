@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const userSchame = mongoose.Schema(
+const userSchema = mongoose.Schema(
   {
     name: {
       type: String,
@@ -34,10 +34,9 @@ const userSchame = mongoose.Schema(
   { timestamps: true }
 );
 
-userSchame.virtual("age").get(() => {
+userSchema.virtual("age").get(function () {
   const today = new Date();
   const dob = this.dob;
-
   let age = today.getFullYear() - dob.getFullYear();
 
   if (
@@ -50,5 +49,5 @@ userSchame.virtual("age").get(() => {
   return age;
 });
 
-const User = mongoose.model("User", userSchame);
+const User = mongoose.model("User", userSchema);
 export default User;
