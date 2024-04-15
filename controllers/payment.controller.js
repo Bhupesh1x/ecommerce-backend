@@ -1,3 +1,4 @@
+import { stripe } from "../index.js";
 import Coupon from "../models/coupon.js";
 import { errorMessage } from "../utils/features.js";
 
@@ -76,4 +77,25 @@ const deleteCoupon = async (req, res) => {
   }
 };
 
-export { createCoupon, applyDiscount, allCoupons, deleteCoupon };
+const createPayment = async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount) {
+      return errorMessage(res, "Please enter amount", 400);
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Number(amount) * 100,
+      currency: "inr",
+    });
+    return res.status(201).json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    return errorMessage(res);
+  }
+};
+
+export { createCoupon, applyDiscount, allCoupons, deleteCoupon, createPayment };

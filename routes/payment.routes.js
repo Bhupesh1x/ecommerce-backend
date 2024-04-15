@@ -5,11 +5,13 @@ import {
   allCoupons,
   applyDiscount,
   createCoupon,
+  createPayment,
   deleteCoupon,
 } from "../controllers/payment.controller.js";
 
 const router = express.Router();
 
+router.post("/create", createPayment);
 router.post("/create-coupon", isAdmin, createCoupon);
 router.get("/apply-discount", isAuthenticated, applyDiscount);
 router.get("/all-coupons", isAdmin, allCoupons);
