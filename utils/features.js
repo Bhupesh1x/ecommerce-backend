@@ -21,7 +21,7 @@ export const errorMessage = (res, error, statusCode) => {
   });
 };
 
-export const invalidateCache = async ({
+export const invalidateCache = ({
   product,
   order,
   userId,
@@ -47,6 +47,15 @@ export const invalidateCache = async ({
 
     cache.del(keys);
   }
+
+  const keys = [
+    "dasboard-stats",
+    "admin-pie-charts",
+    "admin-bar-charts",
+    "admin-line-charts",
+  ];
+
+  cache.del(keys);
 };
 
 export const reduceProductStock = async (orderItems) => {

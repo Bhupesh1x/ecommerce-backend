@@ -31,7 +31,7 @@ const createOrder = async (req, res) => {
 
     await reduceProductStock(orderItems);
 
-    await invalidateCache({
+    invalidateCache({
       product: true,
       order: true,
       userId: order.user,
@@ -137,7 +137,7 @@ const processOrder = async (req, res) => {
 
     await order.save();
 
-    await invalidateCache({
+    invalidateCache({
       product: false,
       order: true,
       orderId: order._id,
@@ -165,7 +165,7 @@ const deleteOrder = async (req, res) => {
 
     await order.deleteOne();
 
-    await invalidateCache({
+    invalidateCache({
       product: false,
       order: true,
       orderId: order._id,
