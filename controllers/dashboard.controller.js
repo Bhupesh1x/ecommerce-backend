@@ -379,9 +379,62 @@ const getBarChartStats = async (req, res) => {
 
     return res.json(charts);
   } catch (error) {
-    console.log("getPieChartStats-error", error);
+    console.log("getBarChartStats-error", error);
     return errorMessage(res);
   }
 };
 
-export { getDashboardStats, getPieChartStats, getBarChartStats };
+const getLineChartStats = async (req, res) => {
+  try {
+    let key = "admin-line-charts";
+    let charts;
+
+    if (cache.has(key)) {
+      charts = JSON.parse(cache.get(key));
+    } else {
+      const today = new Date();
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(today.getMonth() - 12);
+
+      const baseQuery = {
+        createdAt: {
+          $gte: twelveMonthsAgo,
+          $lte: today,
+        },
+      };
+
+      const [products, users, orders] = await Promise.all([
+        Product.find(baseQuery).select("createdAt"),
+        User.find(baseQuery).select("createdAt"),
+        Order.find(baseQuery).select("createdAt"),
+      ]);
+
+      const productsCount = getChartData({
+        length: 12,
+        today,
+        docArr: products,
+      });
+      const usersCount = getChartData({ length: 12, today, docArr: users });
+      const ordersCount = getChartData({ length: 12, today, docArr: orders });
+
+      charts = {
+        products: productsCount,
+        users: usersCount,
+        orders: ordersCount,
+      };
+      cache.set(key, JSON.stringify(charts));
+    }
+
+    return res.json(charts);
+  } catch (error) {
+    console.log("getLineChartStats-error", error);
+    return errorMessage(res);
+  }
+};
+
+export {
+  getDashboardStats,
+  getPieChartStats,
+  getBarChartStats,
+  getLineChartStats,
+};
